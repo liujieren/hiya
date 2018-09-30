@@ -1,4 +1,4 @@
-# now
+
 #!/bin/bash
 lsblk
 vgcreate systemvg /dev/vdb1
