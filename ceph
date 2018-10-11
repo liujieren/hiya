@@ -1,12 +1,12 @@
-装好ceph的yum仓库
+#装好ceph的yum仓库
 node1 { 
-修改配置文件/etc/hosts
+#修改配置文件/etc/hosts
 cat /etc/hosts
 192.168.4.50 client
 192.168.4.51 node1
 192.168.4.52 node2
 192.168.4.53 node3
-注意！！！全部机子的/etc/hosts的配置文件内容都要一样
+#注意！！！全部机子的/etc/hosts的配置文件内容都要一样
 ssh-keygen -f /root/.ssh/id_rsa -N ''
 ssh-copy-id 192.168.4.50  51  52  53
 }
