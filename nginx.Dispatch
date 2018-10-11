@@ -1,3 +1,4 @@
+wget https://www.weiyun.com/disk/folder/d92dbb312566b0a2ea74b7f47a25cf41
 #!/bin/bash
 tar -xf lnmp_soft.tar.gz
 cd lnmp_soft/
