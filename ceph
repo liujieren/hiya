@@ -87,5 +87,34 @@ mount /dev/rbd0 /mnt/
 ls /mnt
 #卸载重新挂载即可看到源文件
 }
+###########################################################################################################################
+rbd snap protect image --snap image-snap1    #给image-snap1加保护
+rbd clone image --snap image-snap1 image-clone --image-feature layering  #使用image的快照image-snap1克隆一个新的image-clone镜像
+rbd info image-clone  #查看克隆镜像与父镜像快照的关系
+rbd flatten image-clone
+rbd info image-clone
+client 撤销磁盘映射 {
+umount /mnt
+rbd showmapped
+rbd unmap /dev/rbd/{poolname}/{imagename}
+rbd unmap /dev/rbd/rbd/image
+}
+node1 删除快照与镜像 {
+rbd snap rm image --snap image-snap
+rbd list
+rbd rm image
+}
+node1 缩小or扩大容量 {
+缩小
+rbd resize --size 7G image --allow-shrink
+扩大
+rbd resize --size 15G image
+}
+
+
+
+
+
+
 
 
