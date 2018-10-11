@@ -34,7 +34,7 @@ node1 {
 ceph-deploy new node[1-3]         cd进去后首先创建ceph集群配置
 ceph-deploy install node[1-3]     给所有节点安装软件包
 ceph-deploy mon create-initial    初始化所有节点的mon服务
-到这里如果有报错多数是属于/etc/hosts没有全部一致！
+到这里如果有报错多数是属于/etc/hosts没有全部一致！ ########################################################################
 给准备好的磁盘分区,并且给分好的区归属所属者跟所属主(安装软件包时自动会生成ceph组)
 parted /dev/vdb mklabel gpt
 parted /dev/vdb mkpart primary 1M 50%
