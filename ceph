@@ -88,7 +88,7 @@ ls /mnt
 #卸载重新挂载即可看到源文件
 }
 ###########################################################################################################################
-rbd snap protect image --snap image-snap1    #给image-snap1加保护
+rbd snap protect image --snap image-snap1    #给image-snap1加保护  unprotect 取消保护
 rbd clone image --snap image-snap1 image-clone --image-feature layering  #使用image的快照image-snap1克隆一个新的image-clone镜像
 rbd info image-clone  #查看克隆镜像与父镜像快照的关系
 rbd flatten image-clone
