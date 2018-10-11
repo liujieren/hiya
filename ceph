@@ -23,4 +23,7 @@ cat /etc/chrony.conf
 server 192.168.4.50 iburst
 systemctl restart chronyd
 }
-
+准备好足够的磁盘空间
+node1 {
+安装 ceph-deploy
+创建
