@@ -1,0 +1,19 @@
+#!/bin/bash
+tar -xf lnmp_soft.tar.gz
+cd lnmp_soft/
+tar -xf nginx-1.12.2.tar.gz
+cd nginx-1.12.2/
+yum -y install gcc pcre-devel openssl-devel
+useradd -s /sbin/nologin -M nginx
+ ./configure --prefix=/usr/local/nginx --user=nginx --group=nginx --with-http_ssl_module
+make && make install
+ln -s /usr/local/nginx/sbin/nginx /sbin/
+nginx
+nginx -s reload
+ss -tlunp | grep nginx
+sed -i '33a     upstream webs {' /usr/local/nginx/conf/nginx.conf
+sed -i '34a server 201.1.2.100 weight=2 max_fails=1 fail_timeout=30;' /usr/local/nginx/conf/nginx.conf
+sed -i '35a server 201.1.2.200 weight=1 max_fails=2 fail_timeout=30;' /usr/local/nginx/conf/nginx.conf
+sed -i '36a server 192.168.2.101 down;' /usr/local/nginx/conf/nginx.conf
+sed -i '37a                 }' /usr/local/nginx/conf/nginx.conf
+nginx -s reload
