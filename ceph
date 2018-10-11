@@ -24,6 +24,68 @@ server 192.168.4.50 iburst
 systemctl restart chronyd
 }
 准备好足够的磁盘空间
+lsblk
+vdb           252:16   0   10G  0 disk 
+vdc           252:32   0   10G  0 disk 
+vdd           252:48   0   10G  0 disk
 node1 {
 安装 ceph-deploy
-创建
+创建目录给ceph部署集群并cd到该目录下，因为接下来基本所有操作都是在该目录进行
+ceph-deploy new node[1-3]         cd进去后首先创建ceph集群配置
+ceph-deploy install node[1-3]     给所有节点安装软件包
+ceph-deploy mon create-initial    初始化所有节点的mon服务
+到这里如果有报错多数是属于/etc/hosts没有全部一致！
+给准备好的磁盘分区,并且给分好的区归属所属者跟所属主(安装软件包时自动会生成ceph组)
+parted /dev/vdb mklabel gpt
+parted /dev/vdb mkpart primary 1M 50%
+parted /dev/vdb mkpart primary 50%  100%
+chown ceph.ceph /dev/vdb1
+chown cepg.ceph /dev/vdb2
+所有node机子都执行一遍上面五条命令(分出来的两个小分区是用来做存储服务器的日志journal盘)
+初始化磁盘数据（仅node1操作即可）
+ceph-deploy disk zap node1:vdc  node1:vdd
+ceph-deploy disk zap node2:vdc  node2:vdd
+ceph-deploy disk zap node3:vdc  node3:vdd
+创建OSD存储空间（仅node1操作）
+ceph-deploy osd create node1:vdc:/dev/vdb1 node1:vdd/dev/vdb2
+ceph-deploy osd create node2:vdc:/dev/vdb1 node2:vdd/dev/vdb2
+ceph-deploy osd create node3:vdc:/dev/vdb1 node3:vdd/dev/vdb3
+ceph -s  验证测试
+如果报clock skew的错误 看下时间同步，如果还是失败状态重启下exph相关服务
+ceph osd lspools   查看以下创建好的存储池
+rbd create demo-image(镜像名，随意) --image-feature layering --size 10G     创建第一个镜像
+rbd create rbd/image --image-feature layering --size 10G   创建第二个镜像并指定创建在rbd池
+rbd list   查看所有镜像
+rbd info demo-image  查看镜像的状态
+lsblk
+rbd0          251:0    0   10G  0 disk
+mkfs.ext4 /dev/rbd0
+mount /dev/rbd0 /mnt  格式化并挂载
+}
+client {
+需要安装 ecph-common 软件包
+scp 192.168.4.51:/etc/ceph/ceph.conf  /etc/ceph/     #拷贝配置文件（否则不知道集群在哪）
+scp 192.168.4.51:/etc/ceph/ceph.client.admin.keyring   /etc/ceph/  #拷贝连接密钥（否则无连接权限）
+rbd map image
+lsblk
+rbd showmapped
+mkfs.ext4 /dev/rbd0
+mount /dev/rbd0 /mnt/
+echo hiya > /mnt/test.txt
+已经挂载到client机上
+}
+node1 { 
+rbd snap create image --snap image-snap1  创建镜像快照
+rbd snap ls image
+#创建快照是为了当源文件被误删时可以恢复
+}
+rm -rf /mnt/test.txt
+rbd snap rollback image --snap image-snap1  #在node1执行还原操作
+client {
+umount /mnt
+mount /dev/rbd0 /mnt/
+ls /mnt
+#卸载重新挂载即可看到源文件
+}
+
+
