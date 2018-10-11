@@ -1,1 +1,50 @@
 ＃！/ Bin /bash
+yum -y install gcc openssl-devel pcre-devel zlib-devel &> /dev/null &&echo 11
+tar -xf lnmp_soft.tar.gz
+cd lnmp_soft
+tar -xf nginx-1.12.2.tar.gz
+cd nginx-1.12.2
+/root/lnmp_soft/nginx-1.12.2/configure --with-http_ssl_module --with-stream --with-http_stub_status_module &> /dev/null
+if [ $? -eq 0 ];then
+        echo yes
+else
+        echo no
+fi
+make &>/dev/null
+if [ $? -eq 0 ];then
+        echo yes
+else
+        echo no
+fi
+make install &>/dev/null
+if [ $? -eq 0 ];then
+        echo yes
+else
+        echo no
+fi
+cd ..
+yum -y install mariadb  mariadb-server  mariadb-devel  php-pecl-memcache php  php-mysql   /root/lnmp_soft/php-fpm-5.4.16-42.el7.x86_64.rpm &>/dev/null&&echo 11
+sed -i '45s/index  index.html index.htm;/index  index.html index.htm index.php;/' /usr/local/nginx/conf/nginx.conf
+sed -i '65,71s/#//' /usr/local/nginx/conf/nginx.conf
+sed -i 's/fastcgi_params/fastcgi.conf/' /usr/local/nginx/conf/nginx.conf
+sed -i '69d' /usr/local/nginx/conf/nginx.conf
+systemctl stop  httpd
+ln -s /usr/local/nginx/sbin/nginx /usr/sbin/
+nginx &>/dev/null
+if [ $? -eq 0 ];then
+        nginx -s reload
+else
+        killall nginx
+        nginx
+        nginx -s reload&&echo 11
+fi
+systemctl restart mariadb&&echo 11
+systemctl status mariadb &>/dev/null &&echo 11
+systemctl restart php-fpm&&echo 11
+systemctl status php-fpm &>/dev/null &&echo 11
+cd php_scripts/
+tar -xf php-memcached-demo.tar.gz
+cp -a  /root/lnmp_soft/php_scripts/php-memcached-demo/*  /usr/local/nginx/html/
+netstat -utnlp | grep :80
+netstat -utnlp | grep :9000
+netstat -utnlp | grep :3306                                                                                                   1,1          顶端
