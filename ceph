@@ -110,11 +110,32 @@ rbd resize --size 7G image --allow-shrink
 扩大
 rbd resize --size 15G image
 }
-
-
-
-
-
+错误的集合#########################################################################
+[ceph_deploy][ERROR ] RuntimeError: ceph.client.admin.keyring not found
+该错误是ceph.client.admin.keyring找不到文件
+cepj-deploy admin node[1-4]  
+传输keyring文件即可
+############################################################################
+[root@node81 ceph]# ceph -s
+    cluster a5c7bf13-9f51-4366-b3b0-baad186cacda
+     health HEALTH_WARN
+            too few PGs per OSD (24 < min 30)
+     monmap e1: 1 mons at {node84=192.168.4.84:6789/0}
+            election epoch 3, quorum 0 node84
+     osdmap e43: 8 osds: 8 up, 8 in
+            flags sortbitwise
+      pgmap v82: 64 pgs, 1 pools, 0 bytes data, 0 objects
+            271 MB used, 81560 MB / 81831 MB avail
+                  64 active+clean
+该错误是pgp跟pg不平衡导致：
+从上面可以看到，提示说每个osd上的pg数量小于最小的数目30个。
+pgs为64，因为是3副本的配置，所以当有9个osd的时候，每个osd上均分了64/9 *3=21个pgs,也就是出现了如上的错误 小于最小配置30个。
+解决办法：修改默认pool rbd的pg
+ceph osd pool set rbd pg_num 128
+ceph osd pool set rbd pgp_num 128
+pg = pgp 即可
+这里是简单的实验，pool上也没有数据，所以修改pg影响并不大，但是如果是生产环境，这时候再重新修改pg数，会对生产环境产生较大影响。
+因为pg数变了，就会导致整个集群的数据重新均衡和迁移，数据越大响应io的时间会越长。所以，最好在一开始就设置好pg数
 
 
 
