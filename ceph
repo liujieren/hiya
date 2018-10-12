@@ -137,5 +137,159 @@ pg = pgp 即可
 这里是简单的实验，pool上也没有数据，所以修改pg影响并不大，但是如果是生产环境，这时候再重新修改pg数，会对生产环境产生较大影响。
 因为pg数变了，就会导致整个集群的数据重新均衡和迁移，数据越大响应io的时间会越长。所以，最好在一开始就设置好pg数
 
+#############################################################################################################################
+                                                         块存储
+
+
+//块存储应用
+//为虚拟机创建磁盘镜像
+rbd create vm1-image --image-feature layering --size 10G
+//查看镜像
+rbd list
+rbd info vm1-image
+qemu-img info rbd:rbd/vm1-image
+//ceph认证账户
+[root@node1 ~]# cat /etc/ceph/ceph.conf 
+[root@node1 ~]# cat /etc/ceph/ceph.client.admin.keyring
+//客户端部署，客户端需要安装ceph-common软件包
+//拷贝配置文件（否则不知道集群在哪）
+//拷贝连接密钥（否则无连接权限）
+[root@room9pc[root@room9pc01 ~]# scp 192.168.4.51:/etc/ceph/ceph.conf /etc/ceph/
+[root@room9pc01 ~]# scp 192.168.4.51:/etc/ceph/ceph.client.admin.keyring /etc/ceph/01 ~]# yum -y install ceph-common.x86_64
+[root@room9pc01 ~]# ls /etc/ceph/
+//在真机上创建一台新的虚拟机，创建好后不需要安转操作系统
+------------------------------------------------------------------------------
+//二、配置libvirt secret 设置账户信息                 //kvm用来连接ceph的工具，需要用户名和密码
+//1.编写账户信息
+[root@room9pc01 ~]# vim secret.xml
+<secret ephemeral='no' private='no'>
+        <usage type='ceph'>
+                <name>client.admin secret</name>
+        </usage>
+</secret>
+//2.使用XML配置文件创建secret，生成UUID
+[root@room9pc01 ~]# virsh secret-define --file /root/secret.xml
+//删除UUID
+[root@room9pc01 ~]# virsh secret-undefine f25b406f-78cd-441e-8b7d-abde5010090a
+//3.编写账户信息（获取client.admin的key，或者直接查看密钥）
+[root@room9pc01 ~]# ceph auth get-key client.admin
+[root@room9pc01 ~]# cat /etc/ceph/ceph.client.admin.keyring
+//4.设置secret，添加账户的密钥
+//这里secret后面是之前创建的secret的uuid，base64后面时client.admin账户的密钥
+[root@room9pc01 ~]# virsh secret-set-value --secret f25b406f-78cd-441e-8b7d-abde5010090a --base64 AQDovb5b2M2iLRAAWKESpCBc5971DlSHyNQ74g==
+secret 值设定
+-------------------------------------------------------------------------
+三、虚拟机XML配置文件
+//1、修改虚拟机的配置文件
+//使用图形管理工具创建的虚拟文件，定义一个新的虚拟机
+[root@room9pc01 ~]# virsh dumpxml avpc > /tmp/avpc1.xml
+ vim /tmp/avpc1.xml   //建议备份一下
+
+ 32     <disk type='network' device='disk'>
+ 33       <driver name='qemu' type='raw'/>
+ 34       <auth username='admin'>
+ 35         <secret type='ceph' uuid='f25b406f-78cd-441e-8b7d-abde5010090a'/>
+ 36       </auth>
+ 37 
+ 38       <source protocol='rbd' name='rbd/vm1-image'>
+ 39         <host name='192.168.4.51' port='6789'/>
+ 40       </source>
+ 41
+ 42       <target dev='vda' bus='virtio'/>
+ 43       <address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/>
+//2.定义一个虚拟机
+[root@room9pc01 ~]# virsh define /tmp/avpc1.xml
+//3.验证   
+-------------------------------------------------------------------
+//分布式文件系统CephFS
+//MDS  MateData  对象存储
+//环境准备：client，node1-3 mon,osd ,node4  MDS节点
+一、部署元数据服务器
+//1.登陆node4，安装ceph-mds软件包
+[root@node4 ~]# yum -y install ceph-mds
+//2.登陆node1部署节点操作
+[root@node1 ~]# cd /root/ceph-cluster/
+[root@node1 ceph-cluster]# ceph-deploy mds create node4   //给node4拷贝配置文件，启动mds服务
+//3.同步配置文件和key
+[root@node1 ceph-cluster]# ceph-deploy admin node4
+二、文件系统服务器
+//1.创建存储池，文件系统需要至少2个池，一个池用于存储数据，一个池用于存储元数据。
+[root@node4 ~]# ceph osd pool create cephfs_data 128   //128个文件夹
+[root@node4 ~]# ceph osd pool create cephfs_metadata 128
+[root@node4 ~]# ceph osd lspools
+//2.创建ceph文件系统  ,创建存储空间
+//使用前面创建的池，创建文件系统  
+[root@node4 ~]# ceph mds stat   //查看mds状态
+[root@node4 ~]# ceph fs new myfs1 cephfs_metadata cephfs_data  //创建文件系统myfs1
+[root@node4 ~]# ceph fs ls
+name: myfs1, metadata pool: cephfs_metadata, data pools: [cephfs_data ]
+//3.客户端挂载，linux内核支持ceph文件系统（不需要装软件）
+[root@client ~]# mount -t ceph 192.168.4.51:6789:/ /mnt/cephfs/ -o name=admin,secret=AQDovb5b2M2iLRAAWKESpCBc5971DlSHyNQ74g==
+//文件系统类型为ceph，192.168.4.51为mon节点的ip（不是mds节点的ip），admin是用户名，secret是密钥。/etc/ceph/ceph.client.admin.keyring
+---------------------------------------------------------------------------
+//对象存储，也就是键值存储，通其接口指令，也就是简单的get，put,del和其他扩展，向存储服务上传下载数据。
+//准备环境
+一、部署RGW软件包
+//1、用户需要通过RGW访问存储集群-通过node1安转ceph-radosgw软件包
+[root@node1 ceph-cluster]# ceph-deploy install --rgw node5
+//2、同步配置文件与密钥到node5
+[root@node1 ceph-cluster]# ceph-deploy admin node5
+//3、启动一个RGW服务
+[root@node1 ceph-cluster]# ceph-deploy rgw create node5
+//4、登陆node5验证服务是否启动
+[root@node5 ~]# ps aux | grep radosgw
+[root@node5 ~]# systemctl status ceph-radosgw@\*
+二、修改服务端口
+//1、登陆node5，RGW默认服务端口为7480，修改为8000或80更方便
+[root@node5 ~]# vim /etc/ceph/ceph.conf
+[client.rgw.node5]
+host = node5
+rgw_frontends = "civetweb port=80"  //civetweb是RGW内置的一个为web服务
+[root@node5 ~]# systemctl status ceph-radosgw@\*
+//2、客户端测试
+[root@client ~]# curl 192.168.4.55
+三、使用第三方软件访问
+//1、登陆node（RGW）创建账户
+[root@node5 ~]# radosgw-admin user create --uid="testuser" --display-name="First User"
+[root@node5 ~]# radosgw-admin user info --uid=testuser
+//2、客户端安装软件
+[root@room9pc01 ~]# scp '/root/桌面/07.cluster/cluster 5/s3cmd-2.0.1-1.el7.noarch.rpm' 192.168.4.50:/root/
+[root@client ~]# yum -y install s3cmd-2.0.1-1.el7.noarch.rpm
+//3、配置软件
+[root@client ~]# s3cmd --configure
+Access Key: 8DS9BC17W6GD2277DOIW
+Secret Key: elJ8cElbqdbqs64Qt8gkDqPxcxFs4gh8l8elKbGo
+Default Region [US]:
+S3 Endpoint [s3.amazonaws.com]: 192.168.4.55:80
+[%(bucket)s.s3.amazonaws.com]: %(bucket)s.192.168.4.55:80
+Use HTTPS protocol [Yes]: No
+Test access with supplied credentials? [Y/n] Y
+Save settings? [y/N] y
+//4、客户端测试
+[root@client ~]# s3cmd ls
+//5、创建存储数据的bucket（类似于存储数据的目录）
+[root@client ~]# s3cmd ls   //查看
+[root@client ~]# s3cmd mb s3://my_bucket   //创建目录
+Bucket 's3://my_bucket/' created
+[root@client ~]# s3cmd ls
+2018-10-12 09:49  s3://my_bucket
+[root@client ~]# s3cmd put /var/log/messages s3://my_bucket/log/   //上传
+[root@client ~]# s3cmd ls s3://my_bucket/log/
+[root@client ~]# s3cmd get s3://my_bucket/log/messages /root/     //下载
+[root@client ~]# s3cmd del s3://my_bucket/log/messages            //删除，假如文件夹中只有一个文件，删除文件时会顺便删除本身目录
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
