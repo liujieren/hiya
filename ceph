@@ -40,7 +40,7 @@ parted /dev/vdb mklabel gpt
 parted /dev/vdb mkpart primary 1M 50%
 parted /dev/vdb mkpart primary 50%  100%
 chown ceph.ceph /dev/vdb1
-chown cepg.ceph /dev/vdb2
+chown ceph.ceph /dev/vdb2
 所有node机子都执行一遍上面五条命令(分出来的两个小分区是用来做存储服务器的日志journal盘)
 初始化磁盘数据（仅node1操作即可）
 ceph-deploy disk zap node1:vdc  node1:vdd
