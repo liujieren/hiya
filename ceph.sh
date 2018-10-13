@@ -88,3 +88,5 @@ echo "创建OSD存储空间"
                         ssh root@$k "systemctl restart chronyd"
                         done
 ceph -s
+#########该脚本可能会出现找不到keyring文件错误  执行完脚本之后手动ceph-deploy admin node* 即可 
+#########该脚本是实验脚本 并非实体工作环境使用脚本
