@@ -1,0 +1,29 @@
+web[1-3] yum -y install mariadb  mariadb-server php php-mysql httpd
+systemctl restart httpd
+systemctl  enable httpd
+systemctl restart mariadb
+systemctl enable mariadb
+echo nginx1 >> /var/www/html/test.html
+mysql -uroot -p  ######测试个个机子看看能不能连接上mysql
+curl http://127.0.0.1/test3.html  ######测试网页是否正常
+yum-y install haproxy  ######安装haproxy软件
+cp /etc/haproxy/haproxy.cfg  /etc/haproxy/haproxy.cfg.default   ####备份主配置文件方便恢复源文件
+vim /etc/haproxy/haproxy.cfg   #####修改主配置文件内容   内容如下
+ stats uri /admin            #####测试页面的根目录
+listen weblb 192.168.4.85:80
+        cookie SERVERID rewrite
+        balance roundrobin
+        server weba 192.168.4.87:80 cookie app1inst1 check inter 2000 rise 2 fall 5
+        web机名       IP          端口   cookie名               访问时间  2秒后再访问一次     5次访问不成功就down掉
+        server webb 192.168.4.88:80 cookie app2inst2 check inter 2000 rise 2 fall 5
+        server webc 192.168.4.89:80 cookie app3inst3 check inter 2000 rise 2 fall 5
+#########删除59行之后的内容，并手写添加上面的内容
+systemctl restart haproxy
+systemctl enable  haproxy
+curl http://192.168.4.85/admin  访问测试是否成功
+
+
+
+
+
+
