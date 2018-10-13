@@ -281,6 +281,18 @@ Bucket 's3://my_bucket/' created
 [root@client ~]# s3cmd get s3://my_bucket/log/messages /root/     //下载
 [root@client ~]# s3cmd del s3://my_bucket/log/messages            //删除，假如文件夹中只有一个文件，删除文件时会顺便删除本身目录
 
+###准备好集群环境
+###创建ceph集群
+###配置集群
+###块存储 ： 在集群里创建镜像名   ！！！
+###综合案例实现的需求：把真机创建的虚拟的操作系统安装在ceph集群存储里
+
+###文件系统存储   cephfs
+###   MSDS   可以存储文件类型数据
+
+###对象存储   不稳定
+###可以存储任何数据
+### clinet  (访问软件要客户端 s3cmd 自己准备)
 
 
 
