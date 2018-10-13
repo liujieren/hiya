@@ -22,7 +22,7 @@ listen weblb 192.168.4.85:80
 systemctl restart haproxy
 systemctl enable  haproxy
 curl http://192.168.4.85/admin  访问测试是否成功
-###基于应用
+###基于业务
 defaults最后添加 stats uri /admin  ###健康检查页面
 frontend  weblb 192.168.4.85:80   ###修改IP与端口号
       acl url_html       path_end       -i .html
@@ -44,8 +44,12 @@ backend phpgrp
       server      webc 192.168.4.89:80 check
 ####写完配置文件backend static后面的都可以删除
 systemctl    restart    haproxy
-curl http://192.168.4.85/index.php(index.html)  ###测试是否能访问到页面
-
+curl http://192.168.4.85/admin  ###测试是否能访问到页面
+### lvs     haproxy    nginx    都可以做LB集群
+### lvs只能根据端口区分，不能根据业务区分
+### haproxy可以根据业务区分
+### nginx 不能自带监控功能
+### Lvs DR  工作环境经常用到
 
 
 
