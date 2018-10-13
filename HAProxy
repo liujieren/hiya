@@ -1,3 +1,4 @@
+###基于端口的
 web[1-3] yum -y install mariadb  mariadb-server php php-mysql httpd
 systemctl restart httpd
 systemctl  enable httpd
@@ -9,7 +10,7 @@ curl http://127.0.0.1/test3.html  ######测试网页是否正常
 yum-y install haproxy  ######安装haproxy软件
 cp /etc/haproxy/haproxy.cfg  /etc/haproxy/haproxy.cfg.default   ####备份主配置文件方便恢复源文件
 vim /etc/haproxy/haproxy.cfg   #####修改主配置文件内容   内容如下
- stats uri /admin            #####测试页面的根目录
+ stats uri /admin            ####健康检查页面的根目录
 listen weblb 192.168.4.85:80
         cookie SERVERID rewrite
         balance roundrobin
@@ -21,8 +22,29 @@ listen weblb 192.168.4.85:80
 systemctl restart haproxy
 systemctl enable  haproxy
 curl http://192.168.4.85/admin  访问测试是否成功
+###基于应用
+defaults最后添加 stats uri /admin  ###健康检查页面
+frontend  weblb 192.168.4.85:80   ###修改IP与端口号
+      acl url_html       path_end       -i .html
+        #名称             结尾             定义什么结尾 
+      acl url_php       path_end       -i .php
 
+    use_backend htmlgrp          if url_html
+        #指定什么结尾就访问什么结尾的页面
+    use_backend phpgrp          if url_php
 
+    default_backend             htmlgrp
+      #默认访问
+backend htmlgrp
+      balance     roundrobin
+      server      weba 192.168.4.87:80 check
+      server      webb 192.168.4.88:80 check
+backend phpgrp
+      balance     roundrobin
+      server      webc 192.168.4.89:80 check
+####写完配置文件backend static后面的都可以删除
+systemctl    restart    haproxy
+curl http://192.168.4.85/index.php(index.html)  ###测试是否能访问到页面
 
 
 
