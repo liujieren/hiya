@@ -1,4 +1,5 @@
 ###搭建数据库服务器
+###https://www.cnblogs.com/Anidot/articles/7666909.html  ###相关博客
 ！！！切记!!!不可用yum卸载有关数据库的服务，用 rpm -e --nodeps
 scp /root/桌面/08.dba1/mysql*   root@client:/root
 rpm -Uvh mysql-community-*.rpm
@@ -26,8 +27,8 @@ validate_password_length=6
 }
 ###客户端把数据存储到数据库服务器上的步骤；
 1，客户端连接数据库服务器
-create dabatases 库名;         ###创建库的命令
-show dabatases;         ###显示已有的库
+create databases 库名;         ###创建库的命令
+show databases;         ###显示已有的库
 use  库名;              ###切换库
 select database();     ###显示当前所在库
 show  tables;          ###显示已有的表
@@ -37,8 +38,32 @@ drop   database  库名;  ###删除库
   区分大小写
   不可以使用指令关键字、特殊字符
   }
-
-
+###创建表(文件)   {
+create table 库名.表名（
+  字段名   字段类型（宽度） 约束条件,
+  );
+mysql> create table studen.stuinfo (      ###创建列表 在studen里创建名为stuinfo
+    -> name char(20),                     ###名字的字符为20个
+    -> age int,                           ###年龄 整数
+    -> homeaddr char(50)                  ###家庭地址 字符 50个
+    -> );
+insert into studen.stuinfo values ("bob",19,"shenzhen"), ("tom",21,"guangzhou");   ###插入表，记录内容
+select * from studen.stuinfo;   ###查看内容
+update studen.stuinfo set age=18 where name="bob";   ###修改表内容
+delete from studen.stuinfo where name="bob";     ###删除表内容bob
+ALTER TABLE stuinfo DROP COLUMN homeaddr;     ###删除一整行的列以及结构de
+drop table studen;       ###删除表
+{
+create table 学生表(姓名 char(20),性别 char(6))DEFAULT CHARSET=utf8;   ###设置字符集为中文
+insert into 学生表 values("李四","男"),("翠花","女");
+select * from 学生表;
++--------+--------+
+| 姓名   | 性别   |
++--------+--------+
+| 李四   | 男     |
+| 翠花   | 女     |
++--------+--------+
+}
 
 
 
