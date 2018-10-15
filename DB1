@@ -64,7 +64,24 @@ select * from 学生表;
 | 翠花   | 女     |
 +--------+--------+
 }
-
+二、Mysql数据类型
+INT、DOUBLE、FLOAT、TINYINT、SMALLINT、MEDIUMINT、BIGINT、unsigned 无符号存储范围
+mysql> create table t2(age tinyint unsigned,salary float(8,2));
+mysql> insert into t2 values(18,28000.88);
+定长：char，255变长：varchar，65532大文本类型：text/blob 
+mysql> create table t3(name char(7),location varchar(12)) ;
+日期时间类型
+Datetime   datestamp date  0001-01-01~9999-12-31  year 1901~2155  time HH:MM:SS
+枚举类型
+从给定值集合中选择单个值，ENUM
+-定义格式：enum（值1，值2，值N）
+从给定值集合中选择一个或多个值，set
+定义格式：set（值1，值2，值N）
+mysql> create table t5(
+    -> name char(7),
+    -> hobby set("eat","sleep","play"),
+    -> sex enum("boy","girl","no")
+-> );
 
 
 
