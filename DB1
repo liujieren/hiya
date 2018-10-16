@@ -82,10 +82,48 @@ mysql> create table t5(
     -> hobby set("eat","sleep","play"),
     -> sex enum("boy","girl","no")
 -> );
+###################################################################################################################
+########时间函数  {
+now()  获取系统当前日期和时间
+year() 获取指定时间中的年份
+day()  获取指定时间中的日期
+sleep(N) 休眠N秒
+curdare() 获取当前的系统日期
+curtime() 获取当前的系统时刻
+month()    获取指定时间中的月份
+date()     获取指定时间中的日期
+time()     获取指定时间中的时刻
+mysql> select curdate(),curtime();
++------------+-----------+
+| curdate()  | curtime() |
++------------+-----------+
+| 2018-10-16 | 09:11:26  |
++------------+-----------+
+}
+#########约束条件
+Null   允许为空，默认设置
+NOT NULL 不允许为空
+Key      索引类型
+Default   设置默认值，缺省为NULL
 
+create table t9( name char(10) \
+not null, age tinyint(2) default 19, likes set("eat","sleep","game","flim") not null default "eat,sleep" );
 
-
-
+insert into t9 values("NULL",21,"eat,sleep");
+select * from t9;
++------+------+-----------+
+| name | age  | likes     |
++------+------+-----------+
+| tom  |   19 | eat,sleep |
+| bob  |   21 | game,flim |
+| NULL |   21 | eat,sleep |
++------+------+-----------+
+#################################修改表结构
+add   添加字段
+modify   修改字段类型
+change   修改字段名
+drop    删除字段
+rename   修改表名
 
 
 
