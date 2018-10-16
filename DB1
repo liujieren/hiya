@@ -7,7 +7,7 @@ systemctl restart mysqld ###首次启动会数据初始化
 mysql的默认端口号 3306 
 vim /etc/my.cnf  ###无需修改 按默认配置执行即可  内容如下  {
 datadir=/var/lib/mysql  ###数据库目录
-socket=/var/lib/mysql/mysql.sock  ###
+socket=/var/lib/mysql/mysql.sock  ###0
 log-error=/var/log/mysqld.log   ###服务的日志文件
 pid-file=/var/run/mysqld/mysqld.pid  ###服务的PID
 }
@@ -176,6 +176,18 @@ mysql> select * from t24;
           表的存储引擎必须是innodb
           字段类型要一致
           被参照字段必须钥匙索引类型的一种（primary key）
+          foreign key(表A的字段名)  references（表B字段名）
+          ON UPDATE CASCADE    同步数据
+          ON DELETE CASCADE    同步删除
+          create table ygtab( yg_id int(2) primary key auto_increment, name char(10) ) engine=innodb;  创建A表格
+          create table gztab( gz_id int(2), pay float(7,2), foreign key(gz_id) references ygtab(yg_id) \
+          on update cascade on delete cascade ) engine=innodb;   创建B表格
+          show create table gztab;   查看表格是否有外键
+          update ygtab set yg_id=8 where yg_id=2;   修改ID2为ID8
+          delete from ygtab where yg_id=8;   删除ID8
+          还要给gztab列表里添加主键，否则会出现重复发工资的现象。
+          
+          
           
           
           
