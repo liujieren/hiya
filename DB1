@@ -66,10 +66,10 @@ select * from 学生表;
 }
 二、Mysql数据类型
 INT、DOUBLE、FLOAT、TINYINT、SMALLINT、MEDIUMINT、BIGINT、unsigned 无符号存储范围
-mysql> create table t2(age tinyint unsigned,salary float(8,2));
-mysql> insert into t2 values(18,28000.88);
+create table t2(age tinyint unsigned,salary float(8,2));
+insert into t2 values(18,28000.88);
 定长：char，255变长：varchar，65532大文本类型：text/blob 
-mysql> create table t3(name char(7),location varchar(12)) ;
+create table t3(name char(7),location varchar(12)) ;
 日期时间类型
 Datetime   datestamp date  0001-01-01~9999-12-31  year 1901~2155  time HH:MM:SS
 枚举类型
@@ -132,11 +132,83 @@ rename   修改表名
 show index from 表名;   查看索引的详细信息
 #########################################primary key主键
         一个表中只能有一个primary key字段
+        对应的字段不允许重复，不允许赋NULL值
         如果有多个字段都作为primary key，称为复合主键，必须一起创建一起删除
         主键字段的key标志是PRI
         通常与AUTO——INCREMENT连用
+        自身理解：其实就是设置一定的限制，列如同表格内学号不能相同！
+ create table t23( name char(10),stu_num char(9),primary key(stu_num));
+ desc t23;
++---------+----------+------+-----+---------+-------+
+| Field   | Type     | Null | Key | Default | Extra |
++---------+----------+------+-----+---------+-------+
+| name    | char(10) | YES  |     | NULL    |       |
+| stu_num | char(9)  | NO   | PRI | NULL    |       |
++---------+----------+------+-----+---------+-------+
 
-
+#####################################复合主键（表中多个字段一起做主键）
+create table t24( cip char(20),sport smallint(2),status enum("deny","allow"),primary key(cip,sport));
+  desc t24;
++--------+----------------------+------+-----+---------+-------+
+| Field  | Type                 | Null | Key | Default | Extra |
++--------+----------------------+------+-----+---------+-------+
+| cip    | char(20)             | NO   | PRI | NULL    |       |
+| sport  | smallint(2)          | NO   | PRI | NULL    |       |
+| status | enum('deny','allow') | YES  |     | NULL    |       |
++--------+----------------------+------+-----+---------+-------+
+mysql> select * from t24;
++---------------+-------+--------+
+| cip           | sport | status |
++---------------+-------+--------+
+| 192.168.4.252 |    60 | allow  |
+| 192.168.4.252 |  3360 | allow  |
+| 192.168.4.253 |  3360 | allow  |
+| 192.168.4.254 |    80 | deny   |
++---------------+-------+--------+
+          复合主键中：设置的那两主键不能同时同样出现，至少要更改一个 
+          alter table t24 drop primary key;   删除主键
+###################与AUTO_INCREMENT连用
+          auto_increment 自动增长
+          想要删除主键时，需要先删除自动增长才可以删除主键
+########################################外键
+          让当前表字段的值在另一个表中字段值的范围内选择
+          使用条件
+          表的存储引擎必须是innodb
+          字段类型要一致
+          被参照字段必须钥匙索引类型的一种（primary key）
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 
 
 
