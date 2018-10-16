@@ -27,7 +27,7 @@ validate_password_length=6
 }
 ###客户端把数据存储到数据库服务器上的步骤；
 1，客户端连接数据库服务器
-create databases 库名;         ###创建库的命令
+create database 库名;         ###创建库的命令
 show databases;         ###显示已有的库
 use  库名;              ###切换库
 select database();     ###显示当前所在库
