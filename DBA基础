@@ -86,14 +86,118 @@ mysql> load data infile "/var/lib/mysql-files/passwd"
     -> fields terminated by ":"
     -> lines terminated by "\n";
 mysql> alter table t3 add id int(2) primary key auto_increment first;
-
-
-
-
-
-
-
-
+#########################  修改导入数据文件的目录
+     secure_file_priv=/mydir   ###添加
+     chown  mysql /mydir    
+     systemctl restart   mysqld
+########################  导出数据
+     select *  from user into outfile "/mydir/a.txt";    ###导出指定路径，默认以tab分隔符
+     select *  from user into outfile "/mydir/b.txt" fields terminated by "-" lines terminated by "\n";  ###指定分隔符
+##############################   管理表记录
+        格式1 ： 添加1条记录，给所有字段赋值
+                insert into 表名 values(字段值列表)；
+        格式2 ： 添加N条记录，给所有字段赋值
+                insert into 表名
+                values
+                (字段值列表)，     第一条记录
+                （字段值列表），   第二天记录
+                .......          .....
+###############################  查询表记录
+        格式1 ：
+                select 字段1，字段N from 表名；
+        格式2 ：  
+                select 字段1，字段N from 表明
+                        where 条件表达式；
+###############################  更新表记录
+        格式1 ： 更新表内的所有记录
+                update 表名
+                        set 字段1=字段1值，字段N=字段N值
+################################  删除表记录
+        格式1 ： 仅删除符合条件的记录
+                delete from 表名 where 条件表达式;
+        格式2 ： 删除所有表的表记录
+                delete from 表名;
+#################################   基本匹配条件
+        数值比较
+                字段类型必须数据数值类型
+                =       等于
+                >、>=    大于、大于或等于
+                <、<=    小于、小于或等于
+                ！=      不等于
+         字符比较/匹配空/非空
+                字符比较时，字段类型必须字符类型
+                =               相等
+                ！=             不相等
+                is null         匹配空
+                in not null     非空
+        逻辑匹配
+                or              逻辑或
+                and             逻辑与
+                ！              逻辑非
+                ()              提高优先级
+        范围内匹配/去重显示
+                in                         在...里...
+                not in                     不在..里...
+                between 数字1 and 数字2     在...之间...
+                distinct 字段名             去重显示
+####################################  高级匹配
+        模糊查询
+                where 字段名 like ‘通配符’
+                _ 匹配单个字符、% 匹配0～N个字符
+        正则表达式
+                基本用法
+                        where 字段名 regexp '正则表达式'
+                        正则元字符 ^ $ . [] * |
+        四则运算
+                运算操作
+                        +       加法
+                        -       减法
+                        *       乘法
+                        /       除法
+                        %       取余数
+##################################  操作查询结果
+        聚集函数
+                mysql内置数据统计函数
+                        avg(字段名)        统计字段平均值
+                        sum(字段名)        统计字段之和
+                        min(字段名)        统计字段最小
+                        max(字段名)        统计字段最大
+                        count(字段名)      统计字段值个数
+ ##############################   查询结果排序
+         基本用法      
+                select * from user   
+                order by 字段名 [asc|desc];
+                        asc 正序排列
+                        desc 倒序排列
+         查询结果分组
+                select * from user
+                group by 字段名;
+ ###############################  查询结果过滤
+        基本用法
+                select * from user
+                having 条件表达式;
+                ##########################
+                select * from user
+                where 条件
+                having  条件表达式;
+                #########################
+                select * from user
+                group by 字段名
+                having  条件表达式
+#############################   限制查询结果显示行数
+        基本用法
+                select * from user
+                limit N;                显示查询结果前N条记录
+                ##################
+                select * from user
+                limit N,M;              显示指定范围内的查询记录
+                ####################
+                select * from user
+                where 条件查询 limit 3;     显示查询结果前3条记录
+                ###################
+                select * from user
+                where 条件查询  limit 3,3;  从第三条后面开始显示三条
+                
 
 
 
