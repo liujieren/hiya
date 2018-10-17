@@ -1,3 +1,22 @@
+
+一、mysql存储引擎
+- Mysql服务软件自带的功能程序，处理表的处理器
+功能组建：连接池、sql接口、分析器、优化器、查询缓存、存储引擎、文件系统、管理工具、
+默认的存储引擎
+- MySQL 5.0/5.1 ---> MyISAM
+- MySQL 5.5/5.6 ---> InnoDB
+(1)、列出可用的存储引擎类型
+- show engines；或show engines\G
+(2)、设置默认存储引擎
+修改/etc/my.cnf配置文件
+[mysqld]
+Default-storage——engine=myisam
+(3)、myisam村存储引擎
+主要特点：支持表级锁，不支持事务、事务回滚、外键
+相关的表文件：.frm     .MYI       .MYD
+(4)、innodb存储引擎
+主要特点：支持行级锁定，支持事务回滚、外键
+相关的表文件：.frm、.ibd、ibdata1、ib_logfile0、ib_logfile1
 ##################################  MYSQL锁机制
         表级锁：一次直接对整张表进行加锁
         行级锁：只锁定某一行
@@ -42,7 +61,31 @@ mysql> select * from db3.t4;
         可以节省系统资源
 #####################################################写操作多的表适合使用innodb存储引擎
         可以加大并发访问量
+##################################################数据导入
+二、数据导入导出
+（1）、数据导入
+mysql> show variables like "secure_file_priv";
+[root@client ~]# cp /etc/passwd /var/lib/mysql-files/
+在mysql下执行系统命令
+Mysql> system ls /etc/passwd
+基本用法
+- load data infile “目录名/文件名”
+Into table 表名 fields terminated by “分隔符” lines terminated by “\n”;
 
+mysql> create table t3( 
+    -> name char(50),
+    -> password char(1),
+    -> uid int(1),
+    -> pid int(1),
+    -> comment varchar(150),
+    -> homedir varchar(100),
+    -> shell char(30)
+-> );
+mysql> load data infile "/var/lib/mysql-files/passwd"
+    -> into table t3
+    -> fields terminated by ":"
+    -> lines terminated by "\n";
+mysql> alter table t3 add id int(2) primary key auto_increment first;
 
 
 
