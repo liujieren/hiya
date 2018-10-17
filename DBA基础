@@ -16,9 +16,30 @@ Isolation : 隔离性
 Durability : 持久性
      数据一旦提交，不可改变，永久改变表数据。
         show variables like "autocommit";     ###查看提交状态
-        set autocommit=off;                   ###关闭自动提交
+        set autocommit=off;                   ###关闭自动提交    哪个用户设置的那个生效
         rollback;                             ###数据回滚   表格一定是innodb 否则不支持回滚！！！
         commit;                               ###提交数据
+ ##########################################################################回滚演示
+ create table db3.t4(id int)engine=innodb;    ###创建innodb表
+ mysql>select * from db3.t4;
++------+
+| id   |
++------+
+|  666 |
++------+
+mysql>select * from db3.t4;
+Empty set (0.00 sec)
+mysql> rollback;
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> select * from db3.t4;
++------+
+| id   |
++------+
+|  666 |
++------+
+#########################################################################
+
 
 
 
