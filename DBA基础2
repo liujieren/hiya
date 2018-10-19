@@ -32,6 +32,7 @@
               当条件成立时，以右表为主，左表忽略;
               select * from t6 right join t7 on t6.uid=t7.uid;
 #############################################  mysql 管理方式
-              
+              #################  phpmyadmin
+              安装httpd mysql php-mysql
             
              
