@@ -1,0 +1,23 @@
+#################################################   多表查询
+              复制表
+                将源表XXX复制为新表YYY
+                  create table yyy select * from XXX
+              将指定的查询结果复制为新表ZZZ
+                  create table zzz select * from XXX
+              复制源表XXX的结构的新表VVV
+                  create table VVV select * from XXX where false;
+              将源表VVV的名称改为WWW
+                  alter table vvv rename to www;
+##############################################   多表查询
+              将2个或以上的表，通过某个条件链接起来，从中选取需要的数据
+              当多个表中存在相同意义的字段（字段名可以不同）时，可以通过该字段链接多个表
+              
+              select sno from studen,teacher;
+              select sno from studen,teacher where name='男'
+############################################   where 子查询
+              把内层查询结果作为外层查询的查询条件
+              格式
+              select 字段名 from 表 where 条件 （select 字段名 from 表 where 条件）;
+              select name,age from studen where age < (select avg(age) from studen);
+                          
+             
