@@ -55,3 +55,34 @@
               flush privileges;   刷新
               vim /etc/my,cnf
               systemctl restart mysqld
+##########################################  用户授权及权限撤销
+              权限存储的位置 mysql 主要有
+              user            存储授权用户的访问权限
+              db              存储授权用户对数据库的访问权限
+              tables_priv     存储授权用户对表的访问权限
+              columns_priv    存储授权用户对字段的访问权限
+              
+              同一个用户，不同IP链接，可以设置不同密码
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
