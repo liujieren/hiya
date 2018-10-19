@@ -43,5 +43,15 @@
             Enter password: 输入当前登陆密码
              ################## 恢复管理员登录密码
               vim /etc/my.cnf
-              skip_grant_tables
+              skip_grant_tables   #####跳过验证登录
+              systemctl restart mysqld
+              mysql -uroot -p
+              select host,name.authentication_string from mysql.user;
+              update mysql.user
+              set
+              authentication_string=password('123456')
+              where
+              host='localhost' and user='root';
+              flush privileges;   刷新
+              vim /etc/my,cnf
               systemctl restart mysqld
