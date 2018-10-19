@@ -38,6 +38,10 @@
               chown -R apache:apache phpmyadmin/
               vim config.sample.inc.php
               systemctl restart httpd.service mysqld
+              
             mysqladmin -uroot -p password '654321'
             Enter password: 输入当前登陆密码
-             
+             ################## 恢复管理员登录密码
+              vim /etc/my.cnf
+              skip_grant_tables
+              systemctl restart mysqld
