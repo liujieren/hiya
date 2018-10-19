@@ -34,5 +34,10 @@
 #############################################  mysql 管理方式
               #################  phpmyadmin
               安装httpd mysql php-mysql
-            
+              tar -zxvf phpMyAdmin-2.11.11-all-languages.tar.gz -C /var/www/html/
+              chown -R apache:apache phpmyadmin/
+              vim config.sample.inc.php
+              systemctl restart httpd.service mysqld
+            mysqladmin -uroot -p password '654321'
+            Enter password: 输入当前登陆密码
              
