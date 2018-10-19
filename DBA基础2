@@ -16,8 +16,22 @@
               select sno from studen,teacher where name='男'
 ############################################   where 子查询
               把内层查询结果作为外层查询的查询条件
-              格式
+              格式http://tts.tmooc.cn/ttsPage/LINUX/NSDTN201801/DBA1/DAY04/COURSE/LINUXNSD_V01DBA1DAY04_016.png
               select 字段名 from 表 where 条件 （select 字段名 from 表 where 条件）;
               select name,age from studen where age < (select avg(age) from studen);
-                          
+#############################################  左链接
+              格式
+              select 字段名  from
+              表a left join 表b on 条件表达式;
+              当条件成立时，以左表为主，右表忽略
+              select * from t6 left join t7 on t6.uid=t7.uid;
+############################################   右链接
+              格式
+              select 字段名  from
+              表a right join 表b on 条件;
+              当条件成立时，以右表为主，左表忽略;
+              select * from t6 right join t7 on t6.uid=t7.uid;
+#############################################  mysql 管理方式
+              
+            
              
