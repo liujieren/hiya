@@ -1,0 +1,138 @@
+1、常见的sql操作指令
+- DDL 数据定义语言（create、alter、drop）
+- DML 数据操作语言（insert、update、delete）
+- DCL 数据控制语言 （grant、revoke）
+- DTL 数据事务语言 （commit、rollback、savepoint）
+=============================================
+2、grep password /var/log/mysql.log   //初始化密码文件位置
+mysql -hlocalhost -uroot -p'初始化密码'       //默认只允许自己访问数据库服务器
+++  show databases；		//查看又哪些数据库
+++  select database();		//显示当前数据库
+++  select user();			//显示当前用户
+++  select @@hostname;		//显示主机名
+++  show tables;			//显示当前数据库有哪些表
+++  alter user root@'localhost' identified by 'qwerDF1234.';  //修改root密码
+++  show variables like "%password%"; 	//显示有password关键字的变量参数
+++  set global validate_password_policy=0;  //降低密码策略
+++  set global validate_password_length=6；//修改密码长度，永久设置需要放在/etc/my.cnf中
+++  drop database 库名；		//删除数据库
+++  select version(),current_date;	//显示当前版本和日期
+++  desc 表名;			//查看表结构
+++  select  *  from  表名；		//查看表记录
+++  create table 表名( 字段名  字段类型(长度)  约束条件)；//创建表
+++  drop table  表名；		//删除表
+++  insert into 表名(字段)  values(值列表) 	//插入表记录
+++  update  表名  set 字段=值  条件； 		//修改表记录
+++  delete from 表名 条件;			//删除表记录
+++  alter table 表名  drop  column 列字段；	//删除表的列
+++  show create table 表名；			//显示一个表的信息
+++  create table 表（）default charset=utf8	//设置字符集
+================================================
+3、mysql数据类型
+数值类型
+++  tinyint      			//微小整数
+++  smallint			//小整数
+++  mediumint			//中整数
+++  bigint			//极大整数
+++  int				//大整数
+++  unsigned			//使用无符号存储范围
+++  float(  ,  )			//浮点数
+++  double
+++  decimal
+字符类型 
+++  char()			//定长
+++  varchar()         			//变长
+++  text/blob			//大文本类型
+日期类型
+++  datetime			//日期时间，占用8个字节
+++  timestamp			//占用4个字节
+++  date				//日期
+++  year				//年份
+++  time				//时间
+时间函数
+++  now()		//获取系统当前日期和时间	
+++  year()		//获取指定时间中的年份
+++  day()			//获取指定时间中的日期
+++  sleep(N)		//休眠N秒
+++  curdate()		//获取当前系统的日期
+++  curtime()		//获取当前系统的时间
+++  month()		//获取指定时间中的月份
+++  date()		//获取指定时间中的日期
+++  time()		//获取指定时间中的时刻
+枚举类型
+++  enum(值1，值2，值N)	//从给定值集合中选择单个值
+++  set(值1，值2，值N)	//从给定值集合中选择一个值或多个值
+============================================
+4、约束条件
+++  null	//允许为空，默认设置
+++  not null	//不允许为空
+++  key	索引类型
+++  default     //设置默认值，缺省为null
+===========================================
+5、修改表结构
+++  alter table 表名  执行动作(add,modify,change,drop,rename)
+++  after 字段名 	//添加在后面
+++  first     	//放在最前面
+++  alter table t1 add location char(20) default "guangzhou" after age;  //实例
+===================================================
+6、mysql键值	
+++  索引是对记录集的多个字段进行排序的方法。
+键值类型
+++  index 		//普通索引
+++  show index from 表名	//查看表的索引信息
+++  create  table  test_index(name char(10), age int(2) unsigned, index(name),index(age)) engine=innodb;    //示例
+++  create index  索引名  on 表名(字段名)； //在已有的表中添加index字段
+++  unique		//唯一索引
+++  fulltext		//全文索引
+++  primary key	//主键，不允许有空值，不允许有相同的值
+++  create  table  t2(name_id int(2) primary key auto_increment,name char(10) );     //示例
+++  create  table  t2(name_id int(2) , name char(10)，primary key(name_id,name));    //复合主键
+++  删除主键时，有auto_increment的话，要先修改为不自动增长，再删除主键
+++  foreign key	//外键，表的存储引擎必须时innodb，字段类型也要一致
+- foreign key(表a的字段名)  references 表b(字段名)  
+  on update  cascade 		//自动更新
+  on delete   cascade		//删除
+++  alter table gztab drop foreign key gztab_ibfk_1； //需要指定外键名
+======================================================
+7、mysql存储引擎
+++  show engines；		//列出可用的存储引擎类型
+++  设置默认存储引擎，default-storge-engine=myisam，
+++  myisam存储引擎，支持表级锁，不支持事务，事务回滚、外键
+++  innodb存储引擎， 支持行级锁定，支持事务回滚、外键
+++  show status li ke ‘Table_lock%’;    //查看当前的锁状态
+事务特性（ACID）
+Atomic：原子性、 Consistency：一致性、lsolaition：隔离性、Durability：持久性
+关闭自动提交，默认是自动提交
+++  show cariables like “%autocommit%”；  //查看提交状态
+++  set autocommit=off；			//关闭自动提交
+++  commit；	//提交
+++  rollback；	//回滚
+查询操作多的表适合使用myisam存储引擎，可以节省系统资源；
+写操作多的表适合使用innodb存储引擎，可以加大并发访问量。
+======================================================
+8、数据导入导出
+++  show variables like "secure_file_priv";      //显示文件导出的目录，永久配置需要放入my.cnf
+++  system ls /etc/password		//在mysql中执行bash命令
+++  load data infile "目录名/文件名" into table 表名  fields terminated by "分隔符" lines terminated by “\n”;  //导入
+++  sql查询 into outfile "目录名/文件名" fields terminated by "分隔符" lines terminated by “\n”;		//导出
+9、匹配条件
+（1）、基本匹配条件
+	数值比较：字段必须是数据数值类型
+	=   >   >=   <   <=   !=
+	字符比较/匹配空/非空：字段类型必须是字符类型
+	=    !=   is null       is not null
+	逻辑匹配：多个判断条件时使用
+	or     and      !/not       ()提高优先级
+	范围内匹配/去重显示
+	in (值列表)       not in(值列表）    between 数字1  and   数字2    distinct  字段名
+（2）、高级匹配条件
+	模糊查询：where 字段名  like ‘通配符’，_ 匹配单个字符，%匹配0~N个字符
+	正则表达式：where  字段名  regexp ‘正则表达式’
+	正则元字符   ^  $   []    .    |
+	四则运算：+  -   *    /   %
+（3）、操作查询结果
+	聚集函数：avg、sum、min、max、count
+	查询结果排序：sql查询 order by 字段名(通常时数值类型字段) [asc|desc]
+	查询结果分组：sql查询 group by 字段名(通常时字符类型字段)；
+	查询结果过滤：sql查询 having 条件表达式     //像linux的管道一样
+	限制查询结果显示行数: sql查询 limit N   //显示查询结果前N条记录
