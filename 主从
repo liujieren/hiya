@@ -1,0 +1,133 @@
+部署mysql主从同步结构
+数据库服务器： 63 64 62
+客户端：50
+一、mysql主从同步
+（1）、一主一从：从库自动从主库数据同步到本机
+（2）、单向复制时，建议将从库设置为只读
+二、mysql主从同步结构模式
+（1）、一主一从
+（2）、一主多从
+（3）、主从从
+（4）、主主结构（互为主从）
+三、mysql主从同步配置步骤 	
+（1）、主库的配置 62
+A）、启动binlog 
+[root@mysql62 ~]# vim /etc/my.cnf
+[mysql]
+server_id=62
+log_bin=mysql62
+binlog_format=mixed
+[root@mysql62 ~]# systemctl restart mysqld
+B）、用户授权
+mysql> grant replication slave on *.* to repluser@'%' identified by 'qwerDF1234.';
+mysql> show grants for repluser@'%';
+C）、查看当前正在使用的binlog日志
+mysql> show master status;s
+D）、设置serer_id
+（2）、从库配置  {slave_IO【负责去读主库中的sql命令，放入本机的中继日志】和slave_sql【执行本机relay-log文件里的sql语句，重现master的数据操作】必须启动状态} 63
+A）、指定server_id
+[root@mysql63 ~]# vim /etc/my.cnf
+[mysqld]
+server_id=63
+log_bin=mysql63
+[root@mysql63 ~]# systemctl restart mysqld
+B）、指定主库信息
+[root@mysql63 ~]# mysql -uroot -pqwerDF1234.
+mysql> show slave status;
+mysql> change master to
+    -> master_host="192.168.4.62",
+    -> master_user="repluser",
+    -> master_password="qwerDF1234.",
+    -> master_log_file="mysql62.000001",
+    -> master_log_pos=441;
+##master信息会自动保存到/var/lib/mysql/master.info文件
+##以后需要更改master信息时，应先stop slave
+C）、启动slave程序
+mysql> start slave;
+D）、查看slave程序的状态信息
+mysql> show slave status\G;
+E）、相关文件
+master.info	relay-log.info 主机名-relay-bin.xxxxx  主机名-relay-bin-index
+验证：
+mysql> grant select,update on dba1.* to admin@'%' identified by 'qwerDF1234.';
+1、配置一主多从
+（1）、备份并拷贝给主机64，同步数据
+[root@mysql63 ~]# mysqldump -uroot -pqwerDF1234. dba1 > /root/dba1.sql
+[root@mysql63 ~]# scp dba1.sql 192.168.4.64:/root/
+（2）、导入数据
+[root@mysql64 ~]#  mysql  -uroot -pqwerDF1234.
+mysql> create database dba1;
+mysql> use dba1
+mysql> source /root/dba1.sql
+（3）、主机64配置成从库
+[root@mysql64 ~]# vim /etc/my.cnf
+[mysqld]
+server_id=64
+[root@mysql64 ~]# systemctl restart mysqld
+mysql> change master to
+    -> master_host="192.168.4.62",
+    -> master_user="repluser",
+    -> master_password="qwerDF1234.",
+    -> master_log_file="mysql62.000001",
+    -> master_log_pos=2735;
+mysql> start slave;
+配置从库暂时不同步主机数据：停止从库的slave程序即可
+把从库还原为独立的数据服务器：让64主机不做主机62的从库
+[root@mysql64 ~]# systemctl stop mysqld
+[root@mysql64 ~]# rm -rf /var/lib/mysql/master.info 
+[root@mysql64 ~]# rm -rf /var/lib/mysql/mysql64-relay-bin.*
+[root@mysql64 ~]# rm -rf /var/lib/mysql/relay-log.info 
+[root@mysql64 ~]# vim /etc/my.cnf
+[root@mysql64 ~]# systemctl restart mysqld
+配置mysql主从从同步结构(级联)
+主库配置选项,适用于master服务器
+binlog_do_db=name   			设置master对哪些库记日志
+binlog_ignore_db=name		设置master对哪些库不记日志
+从库配置选项，使用于slave服务器
+Log_slave_updates			  记录从库更新，允许链式复制（A-B-C）
+Relay_log=dbsvr2-relay-bin	  指定中继日志文件名
+Replicate_do_db=mysql		  仅复制指定库，其他库将被忽略，此选项可设置多条
+Replicate_ignore_db=test    不复制哪些库，其他库将被忽略
+-----------------------------------------------------------------------------
+配置主库62：启用binlog日志 用户授权  查看日志信息
+
+配置从库63：
+主配置文件里：要启用log_slave_updates配置
+做主的配置：启用binlog日志 用户授权 查看日志信息
+做从的配置：指定server_id 指定主库信息 启动slave程序 查看slave状态
+[root@mysql63 ~]# vim /etc/my.cnf
+[mysqld]
+server_id=63
+log_bin=slave63
+binlog_format=mixed
+log_slave_updates
+[root@mysql63 ~]# systemctl restart mysqld
+mysql> grant replication slave on *.* to repluser2@'%' identified by 'qwerDF1234.';
+mysql> show grants for repluser2@'%';
+------------------------------------------------------
+把主机64设为主机63的从库
+server_id=64
+mysql> show slave status;
+mysql> change master to 
+    -> master_host="192.168.4.63",
+    -> master_user="repluser2",
+    -> master_password="qwerDF1234.",
+    -> master_log_file="slave63.000001",
+    -> master_log_pos=442;
+mysql> start slave;
+mysql> show slave status\G;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
