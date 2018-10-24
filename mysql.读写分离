@@ -1,0 +1,134 @@
+一、Mysql读写分离
+把客户端查询数据的请求分别给不同的数据库处理
+配置mysql数据读写分离结构
+1、配置 mysql，一主一从 同步结构：要求把63配置成62的从库
+2、主机64安装,做代理服务器，停止数据库服务
+（1）、装包
+[root@mysql64 ~]# rpm -ivh maxscale-2.1.2-1.rhel.7.x86_64.rpm
+（2）、修改配置文件
+[root@proxy64 ~]# cp /etc/maxscale.cnf /root/
+[root@proxy64 ~]# vim /etc/maxscale.cnf
+  9 [maxscale] 						#定义服务启动线程的数量
+ 10 threads=auto
+ ....
+ 18 [server1]
+ 19 type=server
+ 20 address=192.168.4.62
+ 21 port=3306
+ 22 protocol=MySQLBackend
+ 23 
+ 24 [server2]
+ 25 type=server
+ 26 address=192.168.4.63
+ 27 port=3306
+ 28 protocol=MySQLBackend
+ .....
+ 37 [MySQL Monitor]				#定义监控的数据库服务器
+ 38 type=monitor
+ 39 module=mysqlmon
+ 40 servers=server1,server2		#服务器列表
+ 41 user=scalemon					#用户名
+ 42 passwd=qwerDF1234.			#密码
+ 43 monitor_interval=10000\
+         ......
+ 54 #[Read-Only Service]			#不定义只读服务
+ 55 #type=service
+ 56 #router=readconnroute
+ 57 #servers=server1
+ 58 #user=myuser
+ 59 #passwd=mypwd
+ 60 #router_options=slave
+ ......
+ 65 [Read-Write Service]			#定义读写分离服务
+ 66 type=service
+ 67 router=readwritesplit
+ 68 servers=server1,server2		#数据库服务器列表
+ 69 user=maxscale					#客户端访问用户和密码
+ 70 passwd=qwerDF1234.		
+ 71 max_slave_connections=100%
+ ......
+ 77 [MaxAdmin Service]    //定义管理服务
+ 78 type=service
+ 79 router=cli
+ ......
+ 87 #[Read-Only Listener]			//不定义只读服务
+ 88 #type=listener
+ 89 #service=Read-Only Service
+ 90 #protocol=MySQLClient
+ 91 #port=4008
+ ......
+ 93 [Read-Write Listener]			#读写分离服务使用的端口
+ 94 type=listener
+ 95 service=Read-Write Service
+ 96 protocol=MySQLClient
+ 97 port=4006						//中间件端口号
+ ......
+ 99 [MaxAdmin Listener]			#定义管理服务使用的端口
+100 type=listener
+101 service=MaxAdmin Service
+102 protocol=maxscaled
+103 socket=default
+104 port=9527
+
+(3)、根据配置文件的设置，在数据库服务器上添加对应的授权用户
+Scalemon   maxscale
+在主库62做用户授权，63会主动同步 
+mysql> grant replication slave,replication client on *.* to scalemon@'%' identified by "qwerDF1234.";      //监控用户
+mysql> grant select on mysql.* to maxscale@'%' identified by 'qwerDF1234.';			//创建路由用户
+mysql> grant select,insert on db1.* to webuser@'%' identified by 'qwerDF1234.';			//创建访问数据用户
+
+（4）、启动服务并查看服务信息
+[root@proxy64 ~]# maxscale -f /etc/maxscale.cnf
+[root@proxy64 ~]# netstat -anut | grep maxscale
+
+（5）、访问管理服务查看配置信息
+[root@proxy64 ~]# maxadmin  -uadmin  -pmariadb  -P9527
+MaxScale> list servers
+
+（6）、测试读写分离配置：在客户端连接代理服务器，访问数据，能够实现数据读写分离功能
+[root@client50~]# mysql -h 192.168.4.53 -P4406 -uwebuser -pqwerDF1234.
+
+二、Mysql多实例(在1台服务器运行多个数据库服务器)
+(1)、拷贝mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz
+(2)、停止其他软件提供的mysql服务
+[root@client ~]# systemctl stop mysqld
+(3)、安装提供多实例的mysql软件包
+[root@client ~]# tar -xf /root/mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz
+[root@client ~]# mv mysql-5.7.20-linux-glibc2.12-x86_64 /usr/local/mysql
+(4)、创建主配置文件
+[root@client ~]# cd /usr/local/mysql/
+[root@client mysql]# ls /usr/local/mysql/bin/mysqld_multi 
+[root@client mysql]# mv /etc/my.cnf  /root/		//移动
+[root@client mysql]# mkdir /datadir3307 /datadir3308 /datadir3309
+
+[root@client mysql]# vim /etc/my.cnf
+  1 [mysqld_multi]
+  2 mysqld=/usr/local/mysql/bin/mysqld_safe
+  3 mysqladmin=/usr/local/mysql/bin/mysqladmin
+  4 user=root
+  5 
+  6 [mysqld1]
+  7 datadir=/datadir3307
+  8 socket=/datadir3307/mysql3307.sock
+  9 port=3307
+ 10 log-error=/datadir3307/mysqld3307.log
+ 11 pid-file=/datadir3307/mysqld3307.pid
+ 12 
+ 13 [mysqld2]
+ 14 datadir=/datadir3308
+ 15 socket=/datadir3308/mysql3308.sock
+ 16 port=3308
+ 17 log-error=/datadir3308/mysqld3308.log
+ 18 pid-file=/datadir3308/mysqld3308.pid
+
+(5)、启动多实例服务
+[root@client bin]# ./mysqld_multi start 1
+(6)、访问多实例
+[root@client bin]# ./mysql -uroot -pqwerDF1234. -S /datadir3307/mysql3307.sock
+mysql> alter user user() identified by 'qwerDF1234.';
+停止服务
+[root@client bin]# ./mysqld_multi --user=root --password=qwerDF1234. stop 1
+[root@client bin]# netstat -anput | grep 3307
+
+
+三、Mysql性能调优
