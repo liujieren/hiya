@@ -17,6 +17,7 @@ pid-file=/var/run/mysqld/mysqld.pid  ###服务的PID
 mysql -hlocalhost -uroot -p'123456'  ###登入
 update mysql.user set authentication_string=password('123456')
 where user='root' and host='localhost'                              ###修改密码
+flush privileges                          ########刷新权限
 show variables like "%password%";   ###查看有关密码的列表
 set global validate_password_policy=0;  ###修改默认值（有0 ， 1 ， 2）
 set global validate_password_length=6;  ###密码字符个数的修改
