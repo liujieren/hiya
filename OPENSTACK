@@ -60,7 +60,25 @@ yum install -y qemu-kvm libvirt-client libvirt-daemon libvirt-daemon-driver-qemu
 7. 导入公钥
 8. 安装依赖的软件包
 ##################################################
-
-
+yum -y install openstack-packstack
+在root下执行
+创建    packstack --gen-answer-file=answer.ini
+vim answer.txt
+11:   CONFIG_DEFAULT_PASSWORD=123456
+42:   CONFIG_SWIFT_INSTALL=n
+75:   CONFIG_NTP_SERVERS=192.168.1.254
+554:  CONFIG_CINDER_VOLUMES_CREATE=n                  ###不自动创建卷组
+840:  CONFIG_NEUTRON_ML2_TYPE_DRIVERS=flat,vxlan      ###支持网络的几种格式
+876:  CONFIG_NEUTRON_ML2_VXLAN_GROUP=239.1.1.5        ###添加一个组播地址，通过组传播
+910:  CONFIG_NEUTRON_OVS_BRIDGE_MAPPINGS=physnet1:br-ex     ###生成虚拟交换机打通次元 给虚拟机添加一个虚拟交换机，把物理网卡变成虚拟交换机的端口
+921:  CONFIG_NEUTRON_OVS_BRIDGE_IFACES=br-ex:eth0            ###指定虚拟交换机的端口
+936:  CONFIG_NEUTRON_OVS_TUNNEL_IF=eth1                     ###指定隧道的端口
+1179: CONFIG_PROVISION_DEMO=n                              ###是否自动测试   是否都不打紧
+###################################切记！！！回头检查是否以上步奏都做完了  否则安装中途不能ctrl+c  安装全部过程四十多分钟
+执行
+packstack --answer-file=answer.ini
+vim /etc/httpd/conf.d/15-horizon_vhost.conf    \\  在该配置文件里添加 WSGIApplicationGroup %{GLOBAL}
+重启http服务 然后查看 keystonerc_admin 文件获取登陆帐号密码
+然后登陆 http://192.168.1.10/dashboard/project
 
 
