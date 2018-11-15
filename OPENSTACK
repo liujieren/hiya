@@ -79,6 +79,6 @@ vim answer.txt
 packstack --answer-file=answer.ini
 vim /etc/httpd/conf.d/15-horizon_vhost.conf    \\  在该配置文件里添加 WSGIApplicationGroup %{GLOBAL}
 重启http服务 然后查看 keystonerc_admin 文件获取登陆帐号密码
-然后登陆 http://192.168.1.10/dashboard/project
+然后登陆 http://192.168.1.10
 
 
