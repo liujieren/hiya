@@ -1,0 +1,123 @@
+vSphere  ----> esxi、vcenter(windows)
+KVM -----> qemu、libvirt(virsh,virt-manager)
+
+yum install -y qemu-kvm libvirt-daemon libvirt-client libvirt-daemon-driver-qemu
+systemctl restart libvirtd
+
+虚拟机组成
+ -内核虚拟化模块（KVM）
+ -系统设备仿真（QEMU）
+ -虚拟机管理程序（LIBVIRT）
+ -XML文件（虚拟机配置声明文件） // /etc/libvirt/qemu
+ -磁盘镜像文件（虚拟机硬盘）  // /var/lib/libvirt/images
+ 
+ ######################################################################################
+ 
+ -virsh nodeinfo  //查看KVM节点信息
+ -virsh list --all  //列出虚拟机
+ -virsh net-list --all  //列出虚拟机网络
+ -virsh dominfo 虚拟机名称  //查看虚拟机信息
+ -virsh start|reboot|shutdown 虚拟机名称  
+ -virsh destroy KVMname  //强制关机
+ -virsh autostart KVMname  //开机自启
+  
+ virsh -c qemu+ssh://XX.XX.XX.XX/system  //远程   
+ virsh console KVMname
+ ##############################################################################
+ 
+ /etc/libvirt/qemu/networks/vbr.xml
+ 
+ 
+<network>
+  <name>vbr</name>
+  <uuid>978d3846-7994-4e9b-aefa-0beb0c2346c5</uuid>
+  <forward mode='nat'/>
+  <bridge name='vbr' stp='on' delay='0'/>
+  <mac address='52:54:00:f3:15:d6'/>
+  <domain name='vbr'/>
+  <ip address='192.168.1.254' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.1.100' end='192.168.1.200'/>
+    </dhcp>
+  </ip>
+</network>
+
+-net-list  //查看虚拟网络
+-net-define XX.xml  //创建
+-net-undefine XX  //删除
+-net-start XX  //启动
+-net-destroy XX  //停止
+-net-edit XX  //修改
+-net-autostart XX  //开机自启
+
+
+ ########################################################################
+ 
+ /etc/libvirt/qemu
+ 
+ <domain type='kvm'>
+  <name>node</name>
+  <memory unit='KB'>2097152</memory>    //最大内存
+  <currentMemory unit='KB'>2097152</currentMemory>      //使用内存
+  <vcpu placement='static'>2</vcpu>     //cpu数量
+  <os>
+    <type arch='x86_64' machine='pc'>hvm</type>
+    <boot dev='hd'/>
+    <bootmenu enable='yes'/>
+    <bios useserial='yes'/>
+  </os>
+  <features>    //电源管理
+    <acpi/>
+    <apic/>
+  </features>
+  <cpu mode='host-passthrough'>
+  </cpu>
+  <clock offset='localtime'/>   //使用系统时间
+  <on_poweroff>destroy</on_poweroff>    //关机
+  <on_reboot>restart</on_reboot>        //重启
+  <on_crash>restart</on_crash>          //强制重启
+  <devices>
+    <emulator>/usr/libexec/qemu-kvm</emulator>
+    <disk type='file' device='disk'>    //定义硬盘
+      <driver name='qemu' type='qcow2'/>
+      <source file='/var/lib/libvirt/images/node.img'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <interface type='bridge'>
+      <source bridge='vbr'/>    //默认虚拟交换机
+      <model type='virtio'/>
+    </interface>
+    <channel type='unix'>
+      <target type='virtio' name='org.qemu.guest_agent.0'/>
+    </channel>
+    <serial type='pty'></serial>
+    <console type='pty'>
+      <target type='serial'/>
+    </console>
+    <memballoon model='virtio'></memballoon>
+  </devices>
+</domain>
+
+ 
+ ####################################################################
+ QCOW2（虚拟磁盘管理）   COW(Copy On Write)
+ 
+ -qemu-img 命令 参数 块文件名称 大小
+ -create  //创建
+ -convert //转换格式
+ -info  //查看信息
+ -snapshot  //管理快照
+ 
+ -qemu-img create -f qcow2 XX.img 100G  //创建
+ 
+ ##########################################################################
+ 
+DEVICE="eth0"
+ONBOOT="yes"
+NM_CONTROLLED="no"
+TYPE="Ethernet"
+BOOTPROTO="dhcp"
+#IPADDR="192.168.1.XX"
+#NETMASK="255.255.255.0"
+
+###############################################################
