@@ -80,5 +80,18 @@ packstack --answer-file=answer.ini
 vim /etc/httpd/conf.d/15-horizon_vhost.conf    \\  在该配置文件里添加 WSGIApplicationGroup %{GLOBAL}
 重启http服务 然后查看 keystonerc_admin 文件获取登陆帐号密码
 然后登陆 http://192.168.1.10
-
-
+###############################################################################################
+ERROR : local IP address discovery failed. Please set nameserver correctly.   ###如果出现这个错误就是端口没有转换成功
+cat /etc/sysconfig/network-scripts/ifcfg-br-ex       ###查看有没有这个文件
+ONBOOT="yes"
+NM_CONTROLLED="no"
+NOZEROCONF='yes'
+IPADDR="192.168.1.10"
+NETMASK="255.255.255.0"
+GATEWAY=192.168.1.254
+DEVICE=br-ex
+NAME=br-ex
+DEVICETYPE=ovs
+OVSBOOTPROTO="static"
+TYPE=OVSBridge
+###############################################################################################
