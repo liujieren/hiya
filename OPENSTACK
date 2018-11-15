@@ -95,3 +95,13 @@ DEVICETYPE=ovs
 OVSBOOTPROTO="static"
 TYPE=OVSBridge
 ###############################################################################################
+ ovs-vsctl show         ###查看ovs网桥的命令
+ 
+         Port "eth0"
+            Interface "eth0"
+        Port br-ex
+            Interface br-ex
+                type: internal
+                
+  ip -o addr show        ###查看ip命令   -o 是一行显示
+ 
