@@ -43,3 +43,24 @@ NETMASK="255.255.255.0"
 # 在虚拟机上配置12个yum 源 [1个系统源，1个扩展源，10个openstack软件源]
 # 共 10731 包
 [root@openstack ~]# yum repolist
+yum install lvm2              
+pvcreate /dev/vdb
+vgcreate cinder-volumes /dev/vdb    ###逻辑卷的名字是固定的   一定要一模一样
+rpm --import RPM-GPG-KEY-CentOS-7   ###安装密钥
+rpm -qa gpg-*                       ###先查看
+rpm -qi gpg-pubkey-f4a80eb5-53a7ff4b      ### 再 qi 查出来的信息
+yum install -y qemu-kvm libvirt-client libvirt-daemon libvirt-daemon-driver-qemu python-setuptools    ### 额外需要的安装包
+############################################检查这几步做完了没
+1. 禁用 selinux
+2. 卸载 firewalld
+3. 卸载 NetworkManager
+4. 配置主机IP地址
+5. 配置主机yum客户端
+6. 创建cinder-volumes的卷组
+7. 导入公钥
+8. 安装依赖的软件包
+##################################################
+
+
+
+
