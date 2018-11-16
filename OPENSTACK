@@ -105,4 +105,8 @@ TYPE=OVSBridge
                 
   ip -o addr show        ###查看ip命令   -o 是一行显示
  #######################################################################################
-  #####如果虚拟机1006错误  ###/etc/nova/nova.conf   跟  /etc/hosts 里面域名解析一致
+  #####如果虚拟机1006错误  ###/etc/nova/nova.conf 8465  跟  /etc/hosts 里面域名解析一致
+  
+  openstack-nova-compute
+  openstack-nova-console
+  openstack-nova-api
