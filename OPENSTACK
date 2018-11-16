@@ -106,7 +106,22 @@ TYPE=OVSBridge
   ip -o addr show        ###查看ip命令   -o 是一行显示
  #######################################################################################
   #####如果虚拟机1006错误  ###/etc/nova/nova.conf 8465  跟  /etc/hosts 里面域名解析一致
-  
+  ####################################################相关服务 
   openstack-nova-compute
   openstack-nova-console
   openstack-nova-api
+  ##########################################################
+  安装nova01
+  检查两个网卡能否ping通openstack
+  检查/etc/resolv.conf
+  检查chronyc sources -v
+  检查 yum repolist (10731)
+  检查 /etc/hosts
+  关闭 selinux
+  卸载 firewalld-*    NetworkManager-*
+  安装 yum -y install qemu-kvm \
+                      libvirt-daemon \
+                      libvirt-client \
+                      libvirt-daemon-driver-qemu \
+                      python-setuptools
+openstack 上执行                      
