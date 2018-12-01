@@ -15,7 +15,7 @@ pid-file=/var/run/mysqld/mysqld.pid  ###服务的PID
 ###默认只允许数据服务器访问
 ###SQK命令 （结构化查询语言）
 mysql -hlocalhost -uroot -p'123456'  ###登入
-update mysql.user set authentication_string=password('123456')
+alter user root@'localhost' identified by '123456';
 where user='root' and host='localhost'                              ###修改密码
 flush privileges                          ########刷新权限
 show variables like "%password%";   ###查看有关密码的列表
