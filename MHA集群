@@ -298,10 +298,9 @@ My $vip =’192.168.4.100/24’
 测试主从同步状态
 [root@mgm66 ~]# masterha_check_repl --conf=/etc/mha/app1.cnf
 启动管理服务
-[root@mgm66 ~]# masterha_manager --conf=/etc/mha/app1.cnf
+[root@mgm66 ~]# masterha_manager --conf=/etc/mha/app1.cnf  --ignore_last_failover
 6.6、查看状态
-[root@mgm66 ~]# masterha_check_status --conf=/etc/mha/app1.cnf
---remove_dead_master_conf  --ignore_last_failover   
+[root@mgm66 ~]# masterha_check_status --conf=/etc/mha/app1.cnf   
 6.7、测试配置
 在客户端访问50的vip地址
 
